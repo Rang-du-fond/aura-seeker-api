@@ -1,0 +1,44 @@
+[auth]
+issuer = "http://localhost:8080"
+audience = "api"
+access_token_ttl = "15m"
+refresh_idle_ttl = "90d"
+refresh_absolute_ttl = "365d"
+refresh_retry_grace = "30s"
+session_retention = "30d"
+session_cleanup_interval = "1h"
+email_code_ttl = "10m"
+email_code_max_attempts = 5
+check_breached_passwords = true
+breached_passwords_url = "https://api.pwnedpasswords.com/range/"
+recent_auth_window = "10m"
+
+[auth.keys]
+signing_keys_file = "auth_signing_key.pem"
+code_pepper_env = "AUTH_CODE_PEPPER"
+aead_key_env = "AUTH_AEAD_KEY"
+
+[auth.webauthn]
+rp_id = "localhost"
+rp_name = "AURA Seeker"
+origins = ["http://localhost:8080"]
+
+[notifications.email]
+from = "Aura Seeker <no-reply@auraseeker.fr>"
+smtp_url_env = "SMTP_URL"
+
+[auth.rate_limits]
+code_sends_per_ip = 10
+code_sends_per_email = 5
+code_sends_window = "1h"
+code_send_interval = "60s"
+code_checks_per_ip = 30
+code_checks_window = "15m"
+
+[auth.providers.google]
+client_id_web = "822111550536-4ie3pp8udln3k13pifej8ofaoins2qda.apps.googleusercontent.com"
+client_ids_native = [
+    "822111550536-5ibshauqcbar8rv2mbuqddhtiqmh814f.apps.googleusercontent.com",
+    "REPLACE_WITH_ANDROID_RELEASE_CLIENT_ID.apps.googleusercontent.com",
+]
+keys_url = "https://www.googleapis.com/oauth2/v3/certs"

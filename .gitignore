@@ -1,0 +1,27 @@
+# Build output
+/target
+
+# Secrets: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+/uploads
+
+# Test and coverage output
+lcov.info
+*.profraw
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store

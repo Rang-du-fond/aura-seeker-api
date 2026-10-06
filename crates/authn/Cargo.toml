@@ -1,0 +1,32 @@
+[package]
+name = "authn"
+version = "0.1.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[dependencies]
+argon2 = "0.5"
+async-trait = "0.1"
+axum = "0.8"
+base64 = "0.22"
+hmac = "0.12"
+humantime-serde = "1"
+ed25519-dalek = { version = "2", features = ["pkcs8", "pem"] }
+jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+notifier = { path = "../notifier" }
+reqwest = { version = "0.13", default-features = false, features = ["rustls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha1 = "0.10"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["rt", "sync", "time"] }
+tracing = "0.1"
+utoipa = { version = "6.0.0", features = ["uuid"] }
+utoipa-axum = "0.3.0"
+uuid = { version = "1", features = ["v7", "serde"] }
+webauthn-rs = { version = "0.5", features = ["danger-allow-state-serialisation", "conditional-ui"] }
+webauthn-rs-proto = "0.5"
+chacha20poly1305 = "0.10"
