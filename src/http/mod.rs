@@ -1,3 +1,4 @@
+pub mod cors;
 mod error;
 mod hal;
 pub mod health;

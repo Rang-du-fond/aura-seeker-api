@@ -42,3 +42,6 @@ client_ids_native = [
     "REPLACE_WITH_ANDROID_RELEASE_CLIENT_ID.apps.googleusercontent.com",
 ]
 keys_url = "https://www.googleapis.com/oauth2/v3/certs"
+
+[http]
+allowed_origins = ["http://localhost:5173", "http://localhost:4173"]

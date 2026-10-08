@@ -86,6 +86,8 @@ Requests and the operations behind them (services, SQL, file storage, authentica
 OTEL_TRACES_EXPORTER=otlp OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 cargo run --release
 ```
 
+Browsers on other origins can call the API only if their origin is listed in the `[http]` section of `config.toml`, for example `allowed_origins = ["https://auraseeker.fr"]`. An origin is the scheme, host and port, with no trailing slash.
+
 Authentication is configured in the `[auth]` section of `config.toml`, read from the directory the server is started in. The file in this repository lists every setting with its default value: issuer, audience, token lifetimes (`"15m"`, `"90d"`…) and the path of the signing key. A missing file or a missing setting falls back to those defaults.
 
 To send emails, set `SMTP_URL` to an SMTP URL such as `smtps://user:password@smtp.example.com:465`, and the sender address in the `[notifications.email]` section of `config.toml`. Without it, emails are only written to the log.

@@ -43,6 +43,7 @@ fn migrations() -> Vec<Migration> {
 struct Configuration {
     auth: authn::Settings,
     notifications: notifier::Settings,
+    http: http::cors::HttpSettings,
 }
 
 impl Configuration {
@@ -86,6 +87,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .merge(authn::router(authenticator.clone()))
         .into_router()
         .layer(Extension(authenticator))
+        .layer(http::cors::cross_origin(&configuration.http)?)
         .layer(middleware::from_fn(telemetry::trace_requests));
 
     let listener = TcpListener::bind(setting("BIND_ADDRESS", "0.0.0.0:8080")).await?;

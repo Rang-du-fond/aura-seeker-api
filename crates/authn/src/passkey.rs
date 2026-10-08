@@ -67,14 +67,20 @@ pub struct Passkeys {
 
 impl Passkeys {
     pub fn configured(settings: &Settings) -> Result<Self> {
-        let mut origins = settings.webauthn.origins.iter().map(|origin| Url::parse(origin).map_err(Error::unexpected));
-        let first = origins.next().ok_or_else(|| Error::unexpected("auth.webauthn.origins is empty"))??;
-        let mut builder = WebauthnBuilder::new(&settings.webauthn.rp_id, &first)
-            .map_err(Error::unexpected)?
-            .rp_name(&settings.webauthn.rp_name);
-        for origin in origins {
-            builder = builder.append_allowed_origin(&origin?);
-        }
+        let webauthn = &settings.webauthn;
+        let origins = webauthn.origins.iter().map(|origin| Url::parse(origin).map_err(Error::unexpected));
+        let origins = origins.collect::<Result<Vec<_>>>()?;
+        let on_domain = origins.iter().find(|origin| is_on_domain(origin, &webauthn.rp_id)).ok_or_else(|| {
+            let problem = format!(
+                "auth.webauthn: none of the origins {:?} is on the rp_id domain {:?}; \
+                 rp_id must be a bare domain (no scheme, no port) and at least one origin must be on it or on a subdomain",
+                webauthn.origins, webauthn.rp_id
+            );
+            Error::unexpected(problem)
+        })?;
+        let builder =
+            WebauthnBuilder::new(&webauthn.rp_id, on_domain).map_err(Error::unexpected)?.rp_name(&webauthn.rp_name);
+        let builder = origins.iter().fold(builder, WebauthnBuilder::append_allowed_origin);
         let key = settings.keys.secret(&settings.keys.aead_key_env, "aead")?;
         Ok(Self { webauthn: builder.build().map_err(Error::unexpected)?, cipher: XChaCha20Poly1305::new(&key.into()) })
     }
@@ -158,6 +164,32 @@ impl Passkeys {
     }
 }
 
+fn is_on_domain(origin: &Url, domain: &str) -> bool {
+    origin.domain().is_some_and(|host| host == domain || host.ends_with(&format!(".{domain}")))
+}
+
 fn parsed(passkey: &str) -> Result<Passkey> {
     serde_json::from_str(passkey).map_err(Error::unexpected)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn on_domain(origin: &str, domain: &str) -> Result<bool> {
+        Ok(is_on_domain(&Url::parse(origin).map_err(Error::unexpected)?, domain))
+    }
+
+    #[test]
+    fn an_origin_is_on_a_domain_when_it_is_that_domain_or_a_subdomain() -> Result<()> {
+        assert!(on_domain("https://auraseeker.fr", "auraseeker.fr")?);
+        assert!(on_domain("https://api.auraseeker.fr", "auraseeker.fr")?);
+        assert!(on_domain("http://localhost:8080", "localhost")?);
+        assert!(!on_domain("https://auraseeker.fr", "api.auraseeker.fr")?);
+        assert!(!on_domain("https://notauraseeker.fr", "auraseeker.fr")?);
+        assert!(!on_domain("https://aura-seeker.matheo-galuba.com", "auraseeker.fr")?);
+        assert!(!on_domain("https://auraseeker.fr", "https://auraseeker.fr")?);
+        assert!(!on_domain("android:apk-key-hash:abc", "auraseeker.fr")?);
+        Ok(())
+    }
 }

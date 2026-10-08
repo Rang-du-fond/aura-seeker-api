@@ -1,0 +1,18 @@
+# Copy to docker-compose.yml, then next to it provide:
+#   .env                    AUTH_CODE_PEPPER=..., and optionally SMTP_URL=... and GOOGLE_CLIENT_SECRET=...
+#   auth_signing_key.pem    openssl genpkey -algorithm ed25519 -out auth_signing_key.pem && chmod 644 auth_signing_key.pem
+#   config.toml             the [auth] and [notifications] settings
+services:
+  api:
+    image: ghcr.io/rang-du-fond/aura-seeker-api@sha256:2cb879477a894056abb4ce0d396da7336d1397dc240a2645bba60c1167ec19bc
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - data:/home/nonroot
+      - ./auth_signing_key.pem:/home/nonroot/auth_signing_key.pem:ro
+      - ./config.toml:/home/nonroot/config.toml:ro
+
+volumes:
+  data:
